@@ -1,0 +1,34 @@
+{
+    "name": "phadaphunk/scrippy",
+    "description": "A one-off script manager for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+      {
+        "name": "faperreault",
+        "email": "faperreault@pm.me"
+      }
+    ],
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0",
+        "lorisleiva/laravel-actions": "^2.4",
+        "graham-campbell/github": "^12.6"
+      },
+
+  "autoload": {
+    "psr-4": {
+      "Scrippy\\": "src"
+    }
+    },
+  "extra": {
+    "laravel": {
+        "providers": [
+          "Scrippy\\ScrippyServiceProvider"
+        ],
+        "aliases": {
+          "Scrippy": "Scrippy\\Facades\\Scrippy"
+        }
+      }
+  }
+}
