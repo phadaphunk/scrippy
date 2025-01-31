@@ -1,4 +1,6 @@
-<img src="https://github.com/user-attachments/assets/18233824-1eba-4c6a-86f2-796cb9b6e233" width="500" height="500">
+<img src="https://github.com/user-attachments/assets/689beb98-7175-4d30-8235-d89c629c0496" width="500" height="500">
+
+
 
 # Scrippy - Laravel One-Off Script Manager
 
