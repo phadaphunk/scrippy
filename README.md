@@ -8,11 +8,9 @@ Scrippy is a Laravel package that helps you manage one-off scripts across multip
 
 
 # Basic use case
-* Create a script
-* Scrippy runs it in production
-* Scrippy proves it ran properly
-* Scrippy logs when and where it ran
-* Scrippy creates a PR to remove the script for you
+<img  alt="" src="https://github.com/user-attachments/assets/04d9bb01-1bf7-4025-91d4-433cce7903fb" width="800" height="500" />
+
+
 
 ## Features
 
