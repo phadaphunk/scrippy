@@ -16,9 +16,9 @@ Scrippy is a Laravel package that helps you manage one-off scripts across multip
 
 ## Features
 
-* 🚀 Environment-Aware: Scripts known on which environments they should run
+* 🚀 Environment-Aware: Scripts know on which environments they should run
 * 🔄 Run Limiting: Limit how many times a script should run
-* 📊 Execution Tracking: Keep track of when and where scripts ran
+* 📊 Execution Tracking: Keep a trace of when and where scripts ran
 * ✔️ Proof Checking: Scripts can prove they ran properly
 * 🤖 Auto-Cleanup: Automatically creates PRs to remove completed scripts
 * 🔌 Easy Integration: Runs automatically after migrations
@@ -31,6 +31,7 @@ composer require phadaphunk/scrippy
 ## Publish the config file
 
 From there you can control when Scrippy runs, and various options like wether it should cleanup or not.
+Make sure you check the `github.php` config file if you want automatic cleanups 🧹
 
 
 ```
