@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/689beb98-7175-4d30-8235-d89c629c0496" width="500" height="500">
+<img src="https://github.com/user-attachments/assets/689beb98-7175-4d30-8235-d89c629c0496" width="250" height="250">
 
 
 
@@ -6,14 +6,22 @@
 
 Scrippy is a Laravel package that helps you manage one-off scripts across multiple environments. Think of it as migrations, but for scripts that need to run exactly once (or a specific number of times) across your environments.
 
+
+# Basic use case
+* Create a script
+* Scrippy runs it in production
+* Scrippy proves it ran properly
+* Scrippy logs when and where it ran
+* Scrippy creates a PR to remove the script for you
+
 ## Features
 
-* 🚀 Environment-Aware: Scripts know which environments they've run in
-* 🔄 Run Limiting: Set how many times a script should run and avoid race conditions on multi deployments
+* 🚀 Environment-Aware: Scripts known on which environments they should run
+* 🔄 Run Limiting: Limit how many times a script should run
 * 📊 Execution Tracking: Keep track of when and where scripts ran
-* ✔️ Proof Checking: Sripcts can prove they ran properly
+* ✔️ Proof Checking: Scripts can prove they ran properly
 * 🤖 Auto-Cleanup: Automatically creates PRs to remove completed scripts
-* 🔌 Easy Integration: Runs after migrations or on-demand
+* 🔌 Easy Integration: Runs automatically after migrations
 
 ## Installation
 ```
