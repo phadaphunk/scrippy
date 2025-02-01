@@ -10,11 +10,13 @@ class ScrippyExecutor
 {
     public function runPendingScripts(): void
     {
-        $scriptFiles = File::files(config('scrippy.scripts_path'));
+        if (!in_array(app()->environment(), config('scrippy.run_script_on'))) {
+            return;
+        }
 
-
+        $scriptFiles = File::files(config('scrippy.script_path'));
         foreach ($scriptFiles as $file) {
-            $className = config('scrippy.namespace') . '\\' . $file->getBasename('.php');
+            $className = config('scrippy.script_namespace') . '\\' . $file->getBasename('.php');
 
             if (!class_exists($className)) {
                 continue;
@@ -23,7 +25,6 @@ class ScrippyExecutor
             $script = ScrippyExecution::firstOrCreate([
                 'scrippy_name' => $file->getBasename('.php'),
                 'scrippy_class' => $className,
-                'environment' => app()->environment(),
             ]);
 
             if ($script->shouldRun()) {
@@ -42,20 +43,17 @@ class ScrippyExecutor
             }
 
             $instance->run();
-            $script->recordRun();
 
-            if ($instance->proof()) {
-                $script->deleteScript();
+            if (config('scrippy.requires_proof') && !$instance->proof()) {
+                throw new \RuntimeException("Script proof failed");
             }
+
+            $script->recordRun();
+            $script->deleteScript();
 
         } catch (\Exception $e) {
             $script->recordFailure($e->getMessage());
             throw $e;
         }
-    }
-
-    private function removeScript(ScrippyExecution $script): void
-    {
-
     }
 }

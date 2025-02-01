@@ -41,10 +41,10 @@ return [
     'connections' => [
 
         'main' => [
-            'token' => env('GITHUB_TOKEN'),
+            'token' => env('SCRIPPY_GITHUB_TOKEN'),
             'method' => 'token',
-            'owner' => env('GITHUB_OWNER'),
-            'repo' => env('GITHUB_REPO'),
+            'owner' => env('SCRIPPY_GITHUB_OWNER'),
+            'repo' => env('SCRIPPY_GITHUB_REPO'),
             'baseUrl' => 'https://api.github.com/',
             'version' => 'v3',
         ],

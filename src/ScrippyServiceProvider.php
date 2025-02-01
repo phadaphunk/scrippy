@@ -13,10 +13,10 @@ class ScrippyServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/scrippy.php',
-            'scrippy'
-        );
+        // Publish config
+        $this->publishes([
+            __DIR__ . '/../config/scrippy.php' => config_path('scrippy.php'),
+        ], 'scrippy-config');
     }
 
     public function boot()

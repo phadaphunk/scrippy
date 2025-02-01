@@ -4,16 +4,14 @@ namespace Scrippy\Services;
 
 use GrahamCampbell\GitHub\Facades\GitHub;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
-use Scrippy\Interfaces\Runnable;
-use Scrippy\Models\ScrippyExecution;
 
 class GithubExecutor
 {
     private string $scriptName;
     private string $branchName;
+    private string $baseBranch;
     private string $tempDir;
 
     public function handle(string $scriptPath): void
@@ -22,8 +20,8 @@ class GithubExecutor
             throw new \RuntimeException("Script not found at: $scriptPath");
         }
 
-
         $this->scriptName = basename($scriptPath);
+        $this->baseBranch = config('scrippy.cleanup.github.branch_to_cleanup_against');
         $this->branchName = $this->generateBranchName();
         $this->tempDir = sys_get_temp_dir() . '/git-' . Str::random(10);
 
@@ -35,7 +33,6 @@ class GithubExecutor
                 ->createPullRequest()
                 ->cleanup();
 
-            dump('Process completed successfully!');
         } catch (\Exception $e) {
             $this->cleanup();
             throw $e;
@@ -45,39 +42,90 @@ class GithubExecutor
 
     private function setupWorktree(): self
     {
-        dump('Setting up temporary worktree...');
-
         // Create temporary directory
         if (!mkdir($this->tempDir)) {
             throw new \RuntimeException("Failed to create temporary directory: {$this->tempDir}");
         }
 
-        // Fetch latest from master without checking it out
-        Process::run('git fetch origin master:master');
+        // Debug the git status
+        dump('Current git status:', Process::run('git status')->output());
 
-        // Create a new worktree from master
-        Process::run("git worktree add {$this->tempDir} master");
+        // Fetch latest from base branch without checking it out
+        $fetchProcess = Process::run("git fetch origin {$this->baseBranch}");
+        if (!$fetchProcess->successful()) {
+            throw new \RuntimeException("Failed to fetch: " . $fetchProcess->errorOutput());
+        }
+
+        // Create a new worktree from base branch
+        $worktreeProcess = Process::run("git worktree add {$this->tempDir} origin/{$this->baseBranch}");
+        if (!$worktreeProcess->successful()) {
+            throw new \RuntimeException("Failed to create worktree: " . $worktreeProcess->errorOutput());
+        }
 
         // Create and checkout new branch in the worktree
-        Process::run("cd {$this->tempDir} && git checkout -b {$this->branchName}");
+        $checkoutProcess = Process::run("cd {$this->tempDir} && git checkout -b {$this->branchName}");
+        if (!$checkoutProcess->successful()) {
+            throw new \RuntimeException("Failed to create branch: " . $checkoutProcess->errorOutput());
+        }
+
+        // Debug the worktree content
+        dump('Worktree files:', Process::run("cd {$this->tempDir} && ls -la")->output());
 
         return $this;
     }
 
     private function removeScript(string $scriptPath): self
     {
-        dump("Removing script: $scriptPath");
-
         // Get relative path from repository root
         $repoRoot = trim(Process::run('git rev-parse --show-toplevel')->output());
-        $relativeScriptPath = str_replace($repoRoot . '/', '', realpath($scriptPath));
 
-        // Remove the file in the worktree
-        $worktreeScriptPath = "{$this->tempDir}/{$relativeScriptPath}";
-        if (file_exists($worktreeScriptPath) && unlink($worktreeScriptPath)) {
-            Process::run("cd {$this->tempDir} && git rm {$relativeScriptPath}");
-        } else {
-            throw new \RuntimeException("Failed to remove script: $worktreeScriptPath");
+        // Ensure we have the real path of the script
+        $realScriptPath = realpath($scriptPath);
+        if (!$realScriptPath) {
+            throw new \RuntimeException("Cannot resolve real path for: $scriptPath");
+        }
+
+        // Get relative path, ensuring we handle Windows/Unix path separators
+        $relativeScriptPath = str_replace(
+            [$repoRoot . '/', $repoRoot . '\\'],
+            '',
+            $realScriptPath
+        );
+
+        // Construct worktree path using directory separator
+        $worktreeScriptPath = $this->tempDir . DIRECTORY_SEPARATOR . $relativeScriptPath;
+
+        // Ensure directory exists
+        $targetDir = dirname($worktreeScriptPath);
+        if (!is_dir($targetDir)) {
+            if (!mkdir($targetDir, 0777, true)) {
+                throw new \RuntimeException("Failed to create directory: $targetDir");
+            }
+        }
+
+        // Debug information
+        dump([
+            'repoRoot' => $repoRoot,
+            'realScriptPath' => $realScriptPath,
+            'relativeScriptPath' => $relativeScriptPath,
+            'worktreeScriptPath' => $worktreeScriptPath,
+            'fileExists' => file_exists($worktreeScriptPath),
+            'isWritable' => is_writable(dirname($worktreeScriptPath))
+        ]);
+
+        if (!file_exists($worktreeScriptPath)) {
+            throw new \RuntimeException("Script not found in worktree: $worktreeScriptPath");
+        }
+
+        if (!unlink($worktreeScriptPath)) {
+            throw new \RuntimeException("Failed to unlink script: $worktreeScriptPath");
+        }
+
+        // Run git rm after successful unlink
+        $process = Process::run("cd {$this->tempDir} && git rm {$relativeScriptPath}");
+
+        if (!$process->successful()) {
+            throw new \RuntimeException("Git rm failed: " . $process->errorOutput());
         }
 
         return $this;
@@ -85,8 +133,6 @@ class GithubExecutor
 
     private function commitChanges(): self
     {
-        dump('Committing changes...');
-
         $message = "Remove deprecated script: {$this->scriptName}";
         Process::run("cd {$this->tempDir} && git commit -m \"$message\"");
 
@@ -95,8 +141,6 @@ class GithubExecutor
 
     private function pushBranch(): self
     {
-        dump('Pushing branch to remote...');
-
         Process::run("cd {$this->tempDir} && git push origin {$this->branchName}");
 
         return $this;
@@ -104,17 +148,18 @@ class GithubExecutor
 
     private function createPullRequest(): self
     {
-        dump('Creating pull request...');
-
-        $repoOwner = 'floorbox';
-        $repoName = 'bmb-app';
+        $repoOwner = config('github.connections.main.owner');
+        $repoName = config('github.connections.main.repo');
 
         $pr = GitHub::pullRequests()->create($repoOwner, $repoName, [
-            'title' => "Remove deprecated script: {$this->scriptName}",
+            'title' => "🐕 Scrippy Removed a deprecated script: {$this->scriptName}",
             'body' => $this->generatePrDescription(),
             'head' => $this->branchName,
-            'base' => 'master'
+            'base' => $this->baseBranch
         ]);
+
+        // Then add reviewers to the PR
+        GitHub::pullRequests()->reviewRequests()->create($repoOwner, $repoName, $pr['number'], ['sabourin01']);
 
         dump("Pull request created: {$pr['html_url']}");
 
@@ -151,7 +196,7 @@ class GithubExecutor
 
         Please review the changes and ensure this script is no longer needed.
 
-        This PR was automatically created by the script removal bot.
+        This PR was automatically created and is now removed by Scrippy.
         EOT;
     }
 }
