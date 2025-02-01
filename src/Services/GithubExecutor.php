@@ -159,7 +159,7 @@ class GithubExecutor
         ]);
 
         // Then add reviewers to the PR
-        GitHub::pullRequests()->reviewRequests()->create($repoOwner, $repoName, $pr['number'], ['sabourin01']);
+        GitHub::pullRequests()->reviewRequests()->create($repoOwner, $repoName, $pr['number'], config('scrippy.cleanup.github.reviewers'));
 
         dump("Pull request created: {$pr['html_url']}");
 

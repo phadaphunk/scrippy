@@ -17,6 +17,10 @@ class ScrippyServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/scrippy.php' => config_path('scrippy.php'),
         ], 'scrippy-config');
+
+        $this->publishes([
+            __DIR__ . '/../config/github.php' => config_path('github.php'),
+        ], 'github-config');
     }
 
     public function boot()

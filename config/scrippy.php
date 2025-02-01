@@ -45,6 +45,7 @@ return [
         'environment' => env('SCRIPPY_CLEANUP_ENVIRONMENT', 'production'),
         'github' => [
             'branch_to_cleanup_against' => env('SCRIPPY_GITHUB_BRANCH_TO_CLEANUP_AGAINST', default: 'main'),
+            'reviewers' => env('SCRIPPY_GITHUB_REVIEWERS', []),
         ],
     ],
 ];
