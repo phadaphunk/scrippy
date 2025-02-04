@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^10.0|^11.0",
         "lorisleiva/laravel-actions": "^2.4",
         "graham-campbell/github": "^12.6"
       },
