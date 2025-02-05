@@ -10,7 +10,7 @@ class ScrippyExecutor
 {
     public function runPendingScripts(): void
     {
-        echo 'Scrippy looking for scripts to run \n';
+        printf('Scrippy looking for scripts to run \n ');
 
         if (!in_array(app()->environment(), config('scrippy.run_script_on') ?? [])) {
             return;
@@ -34,7 +34,7 @@ class ScrippyExecutor
 
             if ($script->shouldRun()) {
 
-                echo 'Scrippy will now run : ' . $script->scrippy_name . ' \n';
+                printf('Scrippy will now run : ' . $script->scrippy_name . ' \n ');
 
                 $script->update([
                     'run_count' => $script->run_count + 1,
@@ -44,7 +44,7 @@ class ScrippyExecutor
                 $script->save();
                 $this->runScript($script);
 
-                echo 'Scrippy has completed running : ' . $script->scrippy_name . ' \n';
+                printf('Scrippy has completed running : ' . $script->scrippy_name . ' \n ');
             }
         }
     }
