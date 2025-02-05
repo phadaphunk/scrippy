@@ -32,6 +32,10 @@ class ScrippyExecution extends Model
 
     public function shouldRun(): bool
     {
+        if (empty($this->run_count) || empty($this->max_runs)) {
+            return true;
+        }
+
         return $this->run_count < $this->max_runs;
     }
 
