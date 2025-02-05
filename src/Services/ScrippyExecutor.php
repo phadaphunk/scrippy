@@ -16,6 +16,7 @@ class ScrippyExecutor
 
         $scriptFiles = File::files(config('scrippy.script_path'));
         foreach ($scriptFiles as $file) {
+
             $className = config('scrippy.script_namespace') . '\\' . $file->getBasename('.php');
 
             if (!class_exists($className)) {
@@ -28,6 +29,8 @@ class ScrippyExecutor
             ]);
 
             if ($script->shouldRun()) {
+                $script->last_run_at = now();
+                $script->save();
                 $this->runScript($script);
             }
         }
@@ -49,7 +52,7 @@ class ScrippyExecutor
             }
 
             $script->recordRun();
-            $script->deleteScript();
+            //$script->deleteScript();
 
         } catch (\Exception $e) {
             $script->recordFailure($e->getMessage());
