@@ -10,11 +10,14 @@ class ScrippyExecutor
 {
     public function runPendingScripts(): void
     {
-        if (!in_array(app()->environment(), config('scrippy.run_script_on'))) {
+        echo 'Scrippy looking for scripts to run';
+
+        if (!in_array(app()->environment(), config('scrippy.run_script_on') ?? [])) {
             return;
         }
 
         $scriptFiles = File::files(config('scrippy.script_path'));
+
         foreach ($scriptFiles as $file) {
 
             $className = config('scrippy.script_namespace') . '\\' . $file->getBasename('.php');
@@ -26,12 +29,22 @@ class ScrippyExecutor
             $script = ScrippyExecution::firstOrCreate([
                 'scrippy_name' => $file->getBasename('.php'),
                 'scrippy_class' => $className,
+
             ]);
 
             if ($script->shouldRun()) {
-                $script->last_run_at = now();
+
+                echo 'Scrippy will now run : ' . $script->scrippy_name;
+
+                $script->update([
+                    'run_count' => $script->run_count + 1,
+                    'last_run_at' => now(),
+                ]);
+
                 $script->save();
                 $this->runScript($script);
+
+                echo 'Scrippy has completed running : ' . $script->scrippy_name;
             }
         }
     }

@@ -16,8 +16,6 @@ class ScrippyExecution extends Model
     public function recordRun(): void
     {
         $this->update([
-            'run_count' => $this->run_count + 1,
-            'last_run_at' => now(),
             'scrippy_status' => $this->run_count + 1 >= $this->max_runs ? 'completed' : 'pending'
         ]);
     }
