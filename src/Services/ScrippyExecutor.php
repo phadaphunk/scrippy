@@ -16,7 +16,14 @@ class ScrippyExecutor
             return;
         }
 
-        $scriptFiles = File::files(config('scrippy.script_path'));
+        $scriptDirectory = config('scrippy.script_path');
+
+        if (!File::isDirectory($scriptDirectory)) {
+            echo 'Scrippy script directory does not exist. Please create it before running scrippy: ' . $scriptDirectory . PHP_EOL;
+            return;
+        }
+
+        $scriptFiles = File::files($scriptDirectory);
 
         foreach ($scriptFiles as $file) {
 
