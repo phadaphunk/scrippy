@@ -9,7 +9,7 @@ class BaseRun
 {
     use AsAction;
 
-    public ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC;
+    public static ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC;
     public string $jobQueue = 'high';
 
 

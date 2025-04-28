@@ -37,7 +37,7 @@ class ScrippyExecutor
             $script = ScrippyExecution::firstOrCreate([
                 'scrippy_name' => $file->getBasename('.php'),
                 'scrippy_class' => $className,
-                'execution_type' => $className::$executionType,
+                'execution_type' => $className::getExecutionType(),
             ]);
 
             if ($script->shouldRun()) {
@@ -91,7 +91,7 @@ class ScrippyExecutor
 
     private function handleNewScript($classInstance): void
     {
-        switch ($classInstance->executionType) {
+        switch ($classInstance::executionType) {
             case ExecutionTypeEnum::SYNC:
                 $classInstance->run();
                 break;
