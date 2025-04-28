@@ -89,6 +89,7 @@ class ScrippyExecutor
 
     private function getExecutionType(string $className): ExecutionTypeEnum
     {
+        echo $className;
         try {
             $instance = app($className);
             if ($instance instanceof Runnable) {
