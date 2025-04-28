@@ -3,6 +3,7 @@
 namespace Scrippy\Services;
 
 use Illuminate\Support\Facades\File;
+use Scrippy\Enums\ExecutionTypeEnum;
 use Scrippy\Interfaces\Runnable;
 use Scrippy\Models\ScrippyExecution;
 
@@ -10,16 +11,16 @@ class ScrippyExecutor
 {
     public function runPendingScripts(): void
     {
-        echo 'Scrippy looking for scripts to run ' . PHP_EOL;
+        echo 'Scrippy looking for scripts to run '.PHP_EOL;
 
-        if (!in_array(app()->environment(), config('scrippy.run_script_on') ?? [])) {
+        if (! in_array(app()->environment(), config('scrippy.run_script_on') ?? [])) {
             return;
         }
 
         $scriptDirectory = config('scrippy.script_path');
 
-        if (!File::isDirectory($scriptDirectory)) {
-            echo 'Scrippy script directory does not exist. Please create it before running scrippy: ' . $scriptDirectory . PHP_EOL;
+        if (! File::isDirectory($scriptDirectory)) {
+            echo 'Scrippy script directory does not exist. Please create it before running scrippy: '.$scriptDirectory.PHP_EOL;
             return;
         }
 
@@ -27,21 +28,21 @@ class ScrippyExecutor
 
         foreach ($scriptFiles as $file) {
 
-            $className = config('scrippy.script_namespace') . '\\' . $file->getBasename('.php');
+            $className = config('scrippy.script_namespace').'\\'.$file->getBasename('.php');
 
-            if (!class_exists($className)) {
+            if (! class_exists($className)) {
                 continue;
             }
 
             $script = ScrippyExecution::firstOrCreate([
                 'scrippy_name' => $file->getBasename('.php'),
                 'scrippy_class' => $className,
-
+                'execution_type' => $className::$executionType,
             ]);
 
             if ($script->shouldRun()) {
 
-                echo 'Scrippy will now run : ' . $script->scrippy_name . PHP_EOL;
+                echo 'Scrippy will now run : '.$script->scrippy_name.PHP_EOL;
 
                 $script->update([
                     'run_count' => $script->run_count + 1,
@@ -51,7 +52,7 @@ class ScrippyExecutor
                 $script->save();
                 $this->runScript($script);
 
-                echo 'Scrippy has completed running : ' . $script->scrippy_name . PHP_EOL;
+                echo 'Scrippy has completed running : '.$script->scrippy_name.PHP_EOL;
             }
         }
     }
@@ -61,13 +62,16 @@ class ScrippyExecutor
         try {
             $instance = app($script->scrippy_class);
 
-            if (!$instance instanceof Runnable) {
-                throw new \RuntimeException("Script must implement Runnable interface");
+            if ($instance instanceof Runnable) {
+                $this->handleOldScript($instance);
+            } else if ($instance instanceof BaseRun) {
+                $this->handleNewScript($instance);
+            } else {
+                throw new \RuntimeException("Script must implement Runnable or BaseRun interface");
             }
 
-            $instance->run();
 
-            if (config('scrippy.requires_proof') && !$instance->proof()) {
+            if (config('scrippy.requires_proof') && ! $instance->proof()) {
                 throw new \RuntimeException("Script proof failed");
             }
 
@@ -77,6 +81,25 @@ class ScrippyExecutor
         } catch (\Exception $e) {
             $script->recordFailure($e->getMessage());
             throw $e;
+        }
+    }
+
+    private function handleOldScript($classInstance): void
+    {
+        $classInstance->run();
+    }
+
+    private function handleNewScript($classInstance): void
+    {
+        switch ($classInstance::$executionType) {
+            case ExecutionTypeEnum::SYNC:
+                $classInstance->run();
+                break;
+            case ExecutionTypeEnum::ASYNC:
+                $classInstance->dispatch();
+                break;
+            default:
+                throw new \RuntimeException("Invalid execution type");
         }
     }
 }

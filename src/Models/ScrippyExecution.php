@@ -3,6 +3,7 @@
 namespace Scrippy\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Scrippy\Enums\ExecutionTypeEnum;
 use Scrippy\Services\GithubExecutor;
 
 class ScrippyExecution extends Model
@@ -11,6 +12,7 @@ class ScrippyExecution extends Model
 
     protected $casts = [
         'last_run_at' => 'datetime',
+        'execution_type' => ExecutionTypeEnum::class,
     ];
 
     public function recordRun(): void
@@ -40,6 +42,6 @@ class ScrippyExecution extends Model
     public function deleteScript()
     {
         $ex = new GithubExecutor();
-        $ex->handle(config('scrippy.script_path') . '/' . $this->scrippy_name . '.php');
+        $ex->handle(config('scrippy.script_path').'/'.$this->scrippy_name.'.php');
     }
 }
