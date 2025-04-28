@@ -44,6 +44,7 @@ class MakeScrippyCommand extends Command
                             public function handle(): void
                             {
                                 parent::handle();
+                                // Your script logic here
                             }
 
                             public function proof(): bool

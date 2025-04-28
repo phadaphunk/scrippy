@@ -20,6 +20,7 @@ Scrippy is a Laravel package that helps you manage one-off scripts across multip
 * ✔️ Proof Checking: Scripts can prove they ran properly
 * 🤖 Auto-Cleanup: Automatically creates PRs to remove completed scripts
 * 🔌 Easy Integration: Runs automatically after migrations
+* ⚡ Async Execution: Run time-consuming scripts asynchronously via Laravel Queues
 
 ## Installation
 ```
@@ -52,3 +53,50 @@ Just create your scripts and let Scrippy do the work
 ```
 php artisan make:scrippy
 ```
+
+This will create a new script file in `app/Scripts` (or your configured path). 
+
+### Defining a Script
+
+Scripts extend `Scrippy\Actions\BaseRun`. Here's a basic example:
+
+```php
+<?php
+
+namespace App\Scripts;
+
+use Scrippy\Actions\BaseRun;
+use Scrippy\Enums\ExecutionTypeEnum;
+
+class MyFirstScrippyScript extends BaseRun
+{
+    // Set to ASYNC to run via the queue
+    public static ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC; 
+
+    // Define the queue (optional, uses high if not set)
+    // public string $jobQueue = 'scrippy-scripts';
+
+    public function handle(): void
+    {
+        parent::handle();
+        // Your script logic goes here
+        \Log::info('Running MyFirstScrippyScript!');
+    }
+
+    // Optional: Proof check after execution
+    public function proof(): bool
+    {
+        // Verify the script did what it was supposed to
+        return true; 
+    }
+}
+```
+
+### Asynchronous Scripts
+
+If your script performs long-running tasks, you can easily make it run asynchronously:
+
+1.  Set the static `$executionType` property to `ExecutionTypeEnum::ASYNC`.
+
+Scrippy will automatically dispatch the script to the queue instead of running it synchronously during the migration/command execution.
+
