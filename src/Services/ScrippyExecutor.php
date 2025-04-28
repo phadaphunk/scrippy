@@ -3,6 +3,7 @@
 namespace Scrippy\Services;
 
 use Illuminate\Support\Facades\File;
+use Scrippy\Actions\BaseRun;
 use Scrippy\Enums\ExecutionTypeEnum;
 use Scrippy\Interfaces\Runnable;
 use Scrippy\Models\ScrippyExecution;
@@ -90,7 +91,7 @@ class ScrippyExecutor
     private function getExecutionType(string $className): ExecutionTypeEnum
     {
         try {
-            $instance = app($className::class);
+            $instance = app($className);
             if ($instance instanceof Runnable) {
                 return ExecutionTypeEnum::SYNC;
             } else if ($instance instanceof BaseRun) {
