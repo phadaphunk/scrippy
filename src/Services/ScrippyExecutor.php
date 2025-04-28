@@ -91,7 +91,7 @@ class ScrippyExecutor
 
     private function handleNewScript($classInstance): void
     {
-        switch ($classInstance::$executionType) {
+        switch ($classInstance->executionType) {
             case ExecutionTypeEnum::SYNC:
                 $classInstance->run();
                 break;
