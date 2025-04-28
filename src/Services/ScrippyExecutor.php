@@ -37,7 +37,7 @@ class ScrippyExecutor
             $script = ScrippyExecution::firstOrCreate([
                 'scrippy_name' => $file->getBasename('.php'),
                 'scrippy_class' => $className,
-                'execution_type' => $this->getExecutionType($file),
+                'execution_type' => $this->getExecutionType($className),
             ]);
 
             if ($script->shouldRun()) {
@@ -87,15 +87,19 @@ class ScrippyExecutor
         }
     }
 
-    private function getExecutionType($className): ExecutionTypeEnum
+    private function getExecutionType(string $className): ExecutionTypeEnum
     {
-        $instance = app($className);
-        if ($instance instanceof Runnable) {
+        try {
+            $instance = app($className);
+            if ($instance instanceof Runnable) {
+                return ExecutionTypeEnum::SYNC;
+            } else if ($instance instanceof BaseRun) {
+                return $instance::executionType;
+            } else {
+                return ExecutionTypeEnum::SYNC;
+            }
+        } catch (\Exception $e) {
             return ExecutionTypeEnum::SYNC;
-        } else if ($instance instanceof BaseRun) {
-            return $instance::executionType;
-        } else {
-            throw new \RuntimeException("Script must implement Runnable or BaseRun class");
         }
     }
 }

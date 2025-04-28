@@ -11,7 +11,7 @@ return new class extends Migration
     {
         if (! Schema::hasColumn('scrippy_executions', 'execution_type')) {
             Schema::table('scrippy_executions', function (Blueprint $table) {
-                $table->string('execution_type')->default(ExecutionTypeEnum::SYNC->value);
+                $table->string('execution_type')->default(ExecutionTypeEnum::SYNC->value)->after('scrippy_class');
             });
         }
     }
