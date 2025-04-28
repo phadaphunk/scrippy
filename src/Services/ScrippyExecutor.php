@@ -37,7 +37,7 @@ class ScrippyExecutor
             $script = ScrippyExecution::firstOrCreate([
                 'scrippy_name' => $file->getBasename('.php'),
                 'scrippy_class' => $className,
-                'execution_type' => $className::getExecutionType(),
+                'execution_type' => $this->getExecutionType($file),
             ]);
 
             if ($script->shouldRun()) {
@@ -62,12 +62,15 @@ class ScrippyExecutor
         try {
             $instance = app($script->scrippy_class);
 
-            if ($instance instanceof Runnable) {
-                $this->handleOldScript($instance);
-            } else if ($instance instanceof BaseRun) {
-                $this->handleNewScript($instance);
-            } else {
-                throw new \RuntimeException("Script must implement Runnable or BaseRun interface");
+            switch ($script->execution_type) {
+                case ExecutionTypeEnum::SYNC:
+                    $instance->run();
+                    break;
+                case ExecutionTypeEnum::ASYNC:
+                    $instance->dispatch();
+                    break;
+                default:
+                    throw new \RuntimeException("Invalid execution type");
             }
 
 
@@ -84,22 +87,15 @@ class ScrippyExecutor
         }
     }
 
-    private function handleOldScript($classInstance): void
+    private function getExecutionType($className): ExecutionTypeEnum
     {
-        $classInstance->run();
-    }
-
-    private function handleNewScript($classInstance): void
-    {
-        switch ($classInstance::executionType) {
-            case ExecutionTypeEnum::SYNC:
-                $classInstance->run();
-                break;
-            case ExecutionTypeEnum::ASYNC:
-                $classInstance->dispatch();
-                break;
-            default:
-                throw new \RuntimeException("Invalid execution type");
+        $instance = app($className);
+        if ($instance instanceof Runnable) {
+            return ExecutionTypeEnum::SYNC;
+        } else if ($instance instanceof BaseRun) {
+            return $instance::executionType;
+        } else {
+            throw new \RuntimeException("Script must implement Runnable or BaseRun class");
         }
     }
 }
