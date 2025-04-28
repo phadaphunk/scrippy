@@ -89,13 +89,12 @@ class ScrippyExecutor
 
     private function getExecutionType(string $className): ExecutionTypeEnum
     {
-        echo $className;
         try {
             $instance = app($className);
             if ($instance instanceof Runnable) {
                 return ExecutionTypeEnum::SYNC;
             } else if ($instance instanceof BaseRun) {
-                return $instance::executionType;
+                return $instance::$executionType;
             } else {
                 return ExecutionTypeEnum::SYNC;
             }
