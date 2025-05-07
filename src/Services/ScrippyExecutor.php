@@ -66,6 +66,11 @@ class ScrippyExecutor
             switch ($script->execution_type) {
                 case ExecutionTypeEnum::SYNC:
                     $instance->run();
+                    if (config('scrippy.requires_proof') && ! $instance->proof()) {
+                        throw new \RuntimeException("Script proof failed");
+                    }
+
+                    $script->recordRun();
                     break;
                 case ExecutionTypeEnum::ASYNC:
                     $instance->dispatch();
@@ -73,13 +78,6 @@ class ScrippyExecutor
                 default:
                     throw new \RuntimeException("Invalid execution type");
             }
-
-
-            if (config('scrippy.requires_proof') && ! $instance->proof()) {
-                throw new \RuntimeException("Script proof failed");
-            }
-
-            $script->recordRun();
             //$script->deleteScript();
 
         } catch (\Exception $e) {
