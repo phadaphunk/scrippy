@@ -73,7 +73,7 @@ class ScrippyExecutor
                     $script->recordRun();
                     break;
                 case ExecutionTypeEnum::ASYNC:
-                    $instance->dispatch();
+                    $instance->dispatch($script);
                     break;
                 default:
                     throw new \RuntimeException("Invalid execution type");
