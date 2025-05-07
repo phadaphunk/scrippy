@@ -9,7 +9,7 @@ class BaseRun
 {
     use AsAction;
 
-    public static ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC;
+    protected ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC;
     public string $jobQueue = 'high';
 
 
@@ -20,5 +20,10 @@ class BaseRun
     public function proof(): bool
     {
         return true;
+    }
+
+    public function getExecutionType(): ExecutionTypeEnum
+    {
+        return $this->executionType;
     }
 }

@@ -95,7 +95,7 @@ class ScrippyExecutor
             if ($instance instanceof Runnable) {
                 return ExecutionTypeEnum::SYNC;
             } else if ($instance instanceof BaseRun) {
-                return $instance::$executionType;
+                return $instance->getExecutionType();
             } else {
                 return ExecutionTypeEnum::SYNC;
             }

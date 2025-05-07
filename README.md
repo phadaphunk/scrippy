@@ -71,7 +71,7 @@ use Scrippy\Enums\ExecutionTypeEnum;
 class MyFirstScrippyScript extends BaseRun
 {
     // Set to ASYNC to run via the queue
-    public static ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC; 
+    public ExecutionTypeEnum $executionType = ExecutionTypeEnum::SYNC; 
 
     // Define the queue (optional, uses high if not set)
     // public string $jobQueue = 'scrippy-scripts';
