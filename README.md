@@ -96,7 +96,7 @@ class MyFirstScrippyScript extends BaseRun
 
 If your script performs long-running tasks, you can easily make it run asynchronously:
 
-1.  Set the static `$executionType` property to `ExecutionTypeEnum::ASYNC`.
+1.  Set the `$executionType` property to `ExecutionTypeEnum::ASYNC`.
 
 Scrippy will automatically dispatch the script to the queue instead of running it synchronously during the migration/command execution.
 
