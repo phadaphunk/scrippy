@@ -11,9 +11,9 @@
     ],
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^10.0|^11.0",
+        "laravel/framework": "^10.0|^11.0|^12.0",
         "lorisleiva/laravel-actions": "^2.4",
-        "graham-campbell/github": "^12.6"
+        "graham-campbell/github": "^13.0"
       },
 
   "autoload": {

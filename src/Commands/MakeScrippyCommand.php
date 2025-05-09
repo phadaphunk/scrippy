@@ -15,9 +15,9 @@ class MakeScrippyCommand extends Command
     {
         $name = $this->argument('name');
         $className = Str::studly($name);
-        $path = config('scrippy.script_path') . "/{$className}.php";
+        $path = config('scrippy.script_path')."/{$className}.php";
 
-        if (!$files->isDirectory(config('scrippy.script_path'))) {
+        if (! $files->isDirectory(config('scrippy.script_path'))) {
             $files->makeDirectory(config('scrippy.script_path'), 0755, true);
         }
 
@@ -37,12 +37,13 @@ class MakeScrippyCommand extends Command
 
                         namespace {{namespace}};
 
-                        use Scrippy\Interfaces\Runnable;
+                        use Scrippy\Actions\BaseRun;
 
-                        class {{className}} implements Runnable
+                        class {{className}} extends BaseRun
                         {
-                            public function run(): void
+                            public function handle(): void
                             {
+                                parent::handle();
                                 // Your script logic here
                             }
 

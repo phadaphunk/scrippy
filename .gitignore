@@ -1,0 +1,14 @@
+bootstrap/compiled.php
+app/storage/
+public/storage
+public/hot
+storage/framework/cache
+storage/framework/views
+vendor/
+/public/.htaccess.env
+.env.production
+bootstrap/cache/*
+/public/build
+/storage/pail
+/auth.json
+composer.lock
